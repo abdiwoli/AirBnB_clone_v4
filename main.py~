@@ -1,0 +1,49 @@
+from models import storage
+from models.user import User
+from models.city import City
+from models.amenity import Amenity
+from models.place import Place
+
+# Create dummy data for User
+user1 = User(name="John Doe", email="john@example.com", password="password123")
+user2 = User(name="Jane Doe", email="jane@example.com", password="pass456")
+
+# Add users to the session and commit changes
+storage.new(user1)
+storage.new(user2)
+storage.save()
+
+# Create dummy data for City
+city1 = City(name="New York")
+city2 = City(name="San Francisco")
+
+# Add cities to the session and commit changes
+storage.new(city1)
+storage.new(city2)
+storage.save()
+
+# Create dummy data for Amenity
+amenity1 = Amenity(name="WiFi", description="Wireless Internet")
+amenity2 = Amenity(name="Pool", description="Swimming pool")
+
+# Add amenities to the session and commit changes
+storage.new(amenity1)
+storage.new(amenity2)
+storage.save()
+
+# Create dummy data for Place
+place1 = Place(city_id=city1.id, user_id=user1.id, name="Cozy Apartment",
+               description="A comfortable place to stay", number_rooms=2,
+               number_bathrooms=1, max_guest=4, price_by_night=100,
+               latitude=40.7128, longitude=-74.0060)
+
+place2 = Place(city_id=city2.id, user_id=user2.id, name="Luxury Villa",
+               description="A luxurious villa with a pool", number_rooms=4,
+               number_bathrooms=3, max_guest=8, price_by_night=300,
+               latitude=37.7749, longitude=-122.4194)
+
+# Add places to the session and commit changes
+storage.new(place1)
+storage.new(place2)
+storage.save()
+

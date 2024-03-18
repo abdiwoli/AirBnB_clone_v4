@@ -1,130 +1,95 @@
 $(document).ready(function() {
-	var checkedAmenities = {};
-	function updateCheckedAmenities() {
-		var $checkedAmenitiesList = $('.popover h4');
-		var checkedAmenitiesText = "Amenities: ";
+    var checkedAmenities = {};
+    var checkedStates = {};
 
-		for (var amenityId in checkedAmenities) {
-			if (checkedAmenities.hasOwnProperty(amenityId) && checkedAmenities[amenityId]) {
-				checkedAmenitiesText += checkedAmenities[amenityId].name + ", ";
-			}
-		}
+    $('.amenities .popover input[type="checkbox"]').change(function() {
+        var amenityId = $(this).data('id');
+        var amenityName = $(this).data('name');
 
-		$checkedAmenitiesList.text(checkedAmenitiesText.replace(/,\s*$/, ''));
-	}
+        if ($(this).prop('checked')) {
+            checkedAmenities[amenityId] = amenityName;
+        } else {
+            delete checkedAmenities[amenityId];
+        }
 
-	// Function to update API status
-	function updateApiStatus() {
-		var apiUrl = 'http://0.0.0.0:5001/api/v1/status/';
-		var $apiStatusDiv = $('#api_status');
+        updateCheckedContent('.amenities h4', checkedAmenities);
+    });
 
-		// Fetch the API status
-		$.ajax({
-			type: 'GET',
-			url: apiUrl,
-			success: function (data) {
-				if (data.status === 'OK') {
-					$apiStatusDiv.addClass('available');
-				} else {
-					$apiStatusDiv.removeClass('available');
-				}
-			},
-			error: function (error) {
-				console.error('Error fetching API status:', error);
-				$apiStatusDiv.removeClass('available');
-			}
-		});
-	}
+    $('.locations .popover input[type="checkbox"]').change(function() {
+        var stateId = $(this).data('id');
+        var stateName = $(this).data('name');
 
-	// Function to update places based on search
-	function updatePlacesSearch() {
-		var placesSearchUrl = 'http://0.0.0.0:5001/api/v1/places_search/';
+        if ($(this).prop('checked')) {
+            checkedStates[stateId] = stateName;
+        } else {
+            delete checkedStates[stateId];
+        }
 
-		// Send a POST request to places_search
-		$.ajax({
-			type: 'POST',
-			url: placesSearchUrl,
-			contentType: 'application/json',
-			data: JSON.stringify({}),
-			success: function(response) {
-				// Clear existing places
-				$('.places').empty();
-
-				// Loop through the result and create article tags
-				for (var i = 0; i < response.length; i++) {
-					var place = response[i];
-					var articleHTML = '<article><div class="title_box"><h2>' +
-						place.name + '</h2><div class="price_by_night">$' +
-						place.price_by_night + '</div></div><div class="information">' +
-						'<div class="max_guest">' + place.max_guest + ' Guest' +
-						(place.max_guest !== 1 ? 's' : '') + '</div><div class="number_rooms">' +
-						place.number_rooms + ' Bedroom' + (place.number_rooms !== 1 ? 's' : '') +
-						'</div><div class="number_bathrooms">' + place.number_bathrooms +
-						' Bathroom' + (place.number_bathrooms !== 1 ? 's' : '') + '</div></div>' +
-						'<div class="description">' + place.description + '</div></article>';
-					$('.places').append(articleHTML);
-				}
-			},
-			error: function(error) {
-				console.error('Error fetching places:', error);
-			}
-		});
-	}
-
-	// Function to handle search button click
-	function handleSearchButtonClick() {
-		// Make a new POST request to places_search with the list of checked amenities
-		$.ajax({
-			type: 'POST',
-			url: 'http://0.0.0.0:5001/api/v1/places_search/',
-			contentType: 'application/json',
-			data: JSON.stringify({ amenities: Object.keys(checkedAmenities) }),
-			success: function(response) {
-				// Clear existing places
-				$('.places').empty();
-
-				// Loop through the result and create article tags
-				for (var i = 0; i < response.length; i++) {
-					var place = response[i];
-					var articleHTML = '<article><div class="title_box"><h2>' +
-						place.name + '</h2><div class="price_by_night">$' +
-						place.price_by_night + '</div></div><div class="information">' +
-						'<div class="max_guest">' + place.max_guest + ' Guest' +
-						(place.max_guest !== 1 ? 's' : '') + '</div><div class="number_rooms">' +
-						place.number_rooms + ' Bedroom' + (place.number_rooms !== 1 ? 's' : '') +
-						'</div><div class="number_bathrooms">' + place.number_bathrooms +
-						' Bathroom' + (place.number_bathrooms !== 1 ? 's' or '') + '</div></div>' +
-						'<div class="description">' + place.description + '</div></article>';
-					$('.places').append(articleHTML);
-				}
-			},
-			error: function(error) {
-				console.error('Error fetching places:', error);
-			}
-		});
-	}
-
-	// Call the function to update API status and places on page load
-	updatePlacesSearch();
-	updateApiStatus();
-
-	// Attach the click event handler to the search button
-	$('button').on('click', handleSearchButtonClick);
+        updateCheckedContent('.locations h4', checkedStates);
+    });
 
 
-	$('.popover input[type="checkbox"]').on('change', function() {
-		var amenityId = $(this).data('id');
-		var amenityName = $(this).data('name');
 
-		if ($(this).prop('checked')) {
-			checkedAmenities[amenityId] = {
-				id: amenityId,
-				name: amenityName
-			};
-		} else {
-			delete checkedAmenities[amenityId];
-		}
 
-		updateCheckedAmenities();
-	);
-	});
+    function updateCheckedContent(loc, checked) {
+        var $h4 = $(loc);
+        var content = '';
+
+        for (var id in checked) {
+            if (checked.hasOwnProperty(id)) {
+                content += checked[id] + ', ';
+            }
+        }
+        content = content.slice(0, -2);
+
+        $h4.text(content);
+    }
+
+
+
+      $.get('http://172.24.230.196:5001/api/v1/status', function (data, textStatus) {
+    if (textStatus === 'success') {
+        if (data.status === 'OK') {
+        $('#api_status').css('background-color', '#ff545f');
+        } else {
+        $('#api_status').css('background-color', 'green');
+      }
+    }
+      });
+
+    $('button').click(function() {
+    var checkedStateIds = [];
+    var amenitiesIds = [];
+
+    $('.locations .popover input[type="checkbox"]:checked').each(function() {
+        checkedStateIds.push($(this).data('id'));
+    });
+
+    $('.amenities .popover input[type="checkbox"]:checked').each(function() {
+        amenitiesIds.push($(this).data('id'));
+    });
+
+    if (checkedStateIds.length > 0 || amenitiesIds.length > 0) {
+        var payload = {
+            "states": checkedStateIds,
+            "amenities": amenitiesIds
+        };
+
+        $.ajax({
+            type: "POST",
+            url: "http://172.24.230.196:5001/api/v1/places_search",
+            contentType: "application/json",
+            data: JSON.stringify(payload),
+            success: function(response) {
+                updatePlaces(response);
+            },
+            error: function(xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+    } else {
+        console.log('No state checkbox is checked.');
+    }
+    });
+    
+});

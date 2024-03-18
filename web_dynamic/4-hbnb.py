@@ -5,31 +5,29 @@ from models.state import State
 from models.city import City
 from models.amenity import Amenity
 from models.place import Place
-from os import environ
+from os import environ, path
 from flask import Flask, render_template
 import uuid
+from api.v1.app import app
 
 
-app = Flask(__name__)
-# app.jinja_env.trim_blocks = True
-# app.jinja_env.lstrip_blocks = True
+app.template_folder = path.join(path.dirname(path.abspath(__file__)),
+                                   'templates')
+app.static_folder = path.join(path.dirname(path.abspath(__file__)),
+                                 'static')
 
-
+                                 
 @app.teardown_appcontext
 def close_db(error):
     """ Remove the current SQLAlchemy Session """
     storage.close()
 
 
-@app.route('/100-hbnb', strict_slashes=False)
+@app.route('/4-hbnb', strict_slashes=False)
 def hbnb():
     """ HBNB is alive! """
     states = storage.all(State).values()
     states = sorted(states, key=lambda k: k.name)
-    st_ct = []
-
-    for state in states:
-        st_ct.append([state, sorted(state.cities, key=lambda k: k.name)])
 
     amenities = storage.all(Amenity).values()
     amenities = sorted(amenities, key=lambda k: k.name)
@@ -38,7 +36,7 @@ def hbnb():
     places = sorted(places, key=lambda k: k.name)
 
     return render_template('4-hbnb.html',
-                           states=st_ct,
+                           states=states,
                            amenities=amenities,
                            places=places,
                            cache_id=str(uuid.uuid4()))
@@ -46,4 +44,10 @@ def hbnb():
 
 if __name__ == "__main__":
     """ Main Function """
-    app.run(host='0.0.0.0', port=5000)
+    host = environ.get('HBNB_API_HOST')
+    port = environ.get('HBNB_API_PORT')
+    if not host:
+        host = '0.0.0.0'
+    if not port:
+        port = '5000'
+    app.run(host=host, port=port)

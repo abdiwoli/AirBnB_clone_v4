@@ -1,0 +1,70 @@
+$(document).ready(function() {
+    var checkedAmenities = {};
+    var checkedStates = {};
+    var checkedCities = {};
+
+    $('.amenities .popover input[type="checkbox"]').change(function() {
+        // Amenities checkbox change event
+    });
+
+    $('.locations .popover input[type="checkbox"]').change(function() {
+        var id = $(this).data('id');
+        var name = $(this).data('name');
+        var cities = $(this).data('cities');
+
+        if ($(this).prop('checked')) {
+            // Check if it's a state or a city
+            if ($(this).closest('h2').length > 0) { // State checkbox
+                checkedStates[id] = name;
+                // Check cities connected with this state
+                for (var i = 0; i < cities.length; i++) {
+                    checkedCities[cities[i].id] = cities[i].name;
+                    $('.locations .popover input[type="checkbox"][data-id="' + cities[i].id + '"]').prop('checked', true).change();
+                }
+                updateCheckedContent('.locations h4', checkedStates);
+                updateCheckedContent('.locations h4', checkedCities);
+            } else { // City checkbox
+                checkedCities[id] = name;
+                updateCheckedContent('.locations h4', checkedCities);
+            }
+        } else {
+            if ($(this).closest('h2').length > 0) { // State checkbox
+                delete checkedStates[id];
+                // Uncheck cities connected with this state
+                for (var i = 0; i < cities.length; i++) {
+                    delete checkedCities[cities[i].id];
+                    $('.locations .popover input[type="checkbox"][data-id="' + cities[i].id + '"]').prop('checked', false).change();
+                }
+                updateCheckedContent('.locations h4', checkedStates);
+                updateCheckedContent('.locations h4', checkedCities);
+            } else { // City checkbox
+                delete checkedCities[id];
+                updateCheckedContent('.locations h4', checkedCities);
+            }
+        }
+    });
+
+    function updateCheckedContent(loc, checked) {
+        var $h4 = $(loc);
+        var content = '';
+
+        for (var id in checked) {
+            if (checked.hasOwnProperty(id)) {
+                content += checked[id] + ', ';
+            }
+        }
+        content = content.slice(0, -2);
+
+        $h4.text(content);
+    }
+
+    $.get('http://172.24.230.196:5000/api/v1/status', function (data, textStatus) {
+        if (textStatus === 'success') {
+            if (data.status === 'OK') {
+                $('#api_status').css('background-color', '#ff545f');
+            } else {
+                $('#api_status').css('background-color', 'green');
+            }
+        }
+    });
+});

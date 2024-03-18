@@ -69,8 +69,10 @@ $(document).ready(function() {
         amenitiesIds.push($(this).data('id'));
     });
 
-    if (checkedStateIds.length > 0 || amenitiesIds.length > 0) {
+    
         var payload = {
+            "states": checkedStateIds,
+            "amenities": amenitiesIds
         };
 
         $.ajax({

@@ -29,23 +29,7 @@ $(document).ready(function() {
     });
 
 
-    $('button').click(function() {
-        $.ajax({
-            type: 'POST',
-            url: '/api/v1/places_search',
-            contentType: 'application/json',
-            data: JSON.stringify({
-                amenities: Object.values(checkedAmenities),
-                states: Object.values(checkedStates)
-            }),
-            success: function(response) {
-                updatePlacesHTML(response.places);
-            },
-            error: function(error) {
-                console.error(error);
-            }
-        });
-    });
+
 
     function updateCheckedContent(loc, checked) {
         var $h4 = $(loc);
@@ -61,30 +45,51 @@ $(document).ready(function() {
         $h4.text(content);
     }
 
-    function updatePlacesHTML(places) {
-        var $placesContainer = $('.places');
-        $placesContainer.empty();
 
-        places.forEach(function(place) {
-            var placeHTML = '<article>' +
-                                '<div class="title_box">' +
-                                    '<h2>' + place.name + '</h2>' +
-                                    '<div class="price_by_night">$' + place.price_by_night + '</div>' +
-                                '</div>' +
-                                '<div class="information">' +
-                                    '<div class="max_guest">' + place.max_guest + ' Guest' + (place.max_guest !== 1 ? 's' : '') + '</div>' +
-                                    '<div class="number_rooms">' + place.number_rooms + ' Bedroom' + (place.number_rooms !== 1 ? 's' : '') + '</div>' +
-                                    '<div class="number_bathrooms">' + place.number_bathrooms + ' Bathroom' + (place.number_bathrooms !== 1 ? 's' : '') + '</div>' +
-                                '</div>' +
-                                '<div class="user">' +
-                                    '<b>Owner:</b> ' + place.user.first_name + ' ' + place.user.last_name +
-                                '</div>' +
-                                '<div class="description">' +
-                                    place.description +
-                                '</div>' +
-                            '</article>';
 
-            $placesContainer.append(placeHTML);
-        });
+      $.get('http://172.24.230.196:5001/api/v1/status', function (data, textStatus) {
+    if (textStatus === 'success') {
+        if (data.status === 'OK') {
+        $('#api_status').css('background-color', '#ff545f');
+        } else {
+        $('#api_status').css('background-color', 'green');
+      }
     }
+      });
+
+    $('button').click(function() {
+    var checkedStateIds = [];
+    var amenitiesIds = [];
+
+    $('.locations .popover input[type="checkbox"]:checked').each(function() {
+        checkedStateIds.push($(this).data('id'));
+    });
+
+    $('.amenities .popover input[type="checkbox"]:checked').each(function() {
+        amenitiesIds.push($(this).data('id'));
+    });
+
+    if (checkedStateIds.length > 0 || amenitiesIds.length > 0) {
+        var payload = {
+            "states": checkedStateIds,
+            "amenities": amenitiesIds
+        };
+
+        $.ajax({
+            type: "POST",
+            url: "http://172.24.230.196:5001/api/v1/places_search",
+            contentType: "application/json",
+            data: JSON.stringify(payload),
+            success: function(response) {
+                updatePlaces(response);
+            },
+            error: function(xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+    } else {
+        console.log('No state checkbox is checked.');
+    }
+    });
+    
 });

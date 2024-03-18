@@ -116,24 +116,24 @@ def put_place(place_id):
     storage.save()
     return make_response(jsonify(place.to_dict()), 200)
 
+@app_views.route('/places_search', methods=['POST'],
+                 strict_slashes=False)
+@swag_from('documentation/places/search.yml', methods=['POST'])
+def search_places_by_id():
+    """ search places by id """
 
-@app_views.route('/places_search', methods=['POST'], strict_slashes=False)
-@swag_from('documentation/place/post_search.yml', methods=['POST'])
-def places_search():
-    """
-    Retrieves all Place objects depending of the JSON in the body
-    of the request
-    """
 
     if request.get_json() is None:
-        abort(400, description="Not a JSON")
+        return make_response(jsonify({"error": "Not a JSON"}), 400)
 
     data = request.get_json()
+
 
     if data and len(data):
         states = data.get('states', None)
         cities = data.get('cities', None)
         amenities = data.get('amenities', None)
+
 
     if not data or not len(data) or (
             not states and
@@ -166,15 +166,21 @@ def places_search():
     if amenities:
         if not list_places:
             list_places = storage.all(Place).values()
-        amenities_obj = [storage.get(Amenity, a_id) for a_id in amenities]
-        list_places = [place for place in list_places
-                       if all([am in place.amenities
-                               for am in amenities_obj])]
+        filtered_places = []
+        for place in list_places:
+            for am in place.amenities:
+                if am.id in amenities:
+                    filtered_places.append(place)
+                    break
+                
+        list_places = filtered_places
 
     places = []
     for p in list_places:
         d = p.to_dict()
         d.pop('amenities', None)
         places.append(d)
+
+
 
     return jsonify(places)

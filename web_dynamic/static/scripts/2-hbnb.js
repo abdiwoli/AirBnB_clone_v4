@@ -47,7 +47,7 @@ $(document).ready(function() {
 
 
 
-      $.get('http://172.24.230.196:5001/api/v1/status', function (data, textStatus) {
+      $.get('http://172.24.230.196:5000/api/v1/status', function (data, textStatus) {
     if (textStatus === 'success') {
         if (data.status === 'OK') {
         $('#api_status').css('background-color', '#ff545f');
@@ -55,39 +55,5 @@ $(document).ready(function() {
         $('#api_status').css('background-color', 'green');
       }
     }
-      });
-
-    $('button').click(function() {
-    var checkedStateIds = [];
-    var amenitiesIds = [];
-
-    $('.locations .popover input[type="checkbox"]:checked').each(function() {
-        checkedStateIds.push($(this).data('id'));
-    });
-
-    $('.amenities .popover input[type="checkbox"]:checked').each(function() {
-        amenitiesIds.push($(this).data('id'));
-    });
-
-    if (checkedStateIds.length > 0 || amenitiesIds.length > 0) {
-        var payload = {
-        };
-
-        $.ajax({
-            type: "POST",
-            url: "http://172.24.230.196:5001/api/v1/places_search",
-            contentType: "application/json",
-            data: JSON.stringify(payload),
-            success: function(response) {
-                updatePlaces(response);
-            },
-            error: function(xhr, status, error) {
-                console.error(xhr.responseText);
-            }
-        });
-    } else {
-        console.log('No state checkbox is checked.');
-    }
-    });
-    
-});
+  });
+});k
